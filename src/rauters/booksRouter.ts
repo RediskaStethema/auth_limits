@@ -30,13 +30,17 @@ booksRouter.delete('/remove',asyncHandler(async (req, res) => {
     const result: BookDto = await controller.removeBook(id as string);
     res.type("application/json").json(result);
 }))
-booksRouter.put('/pickup', asyncHandler(async (req, res) => {
-    const id = req.query.id;
-    let {error} = bookIdSchema.validate(id);
-    if (error) throw new Error(JSON.stringify({status: 400, message: error.message}));
+booksRouter.put('/pickup/:id_book/:id_reader', asyncHandler(async (req, res) => {
+    const id_book = req.params.id_book;
+    const id_reader = req.params.id_reader;
 
-    await controller.pickUpBook(id as string);
-    res.send('Book picked up')
+    const { error } = bookIdSchema.validate(id_book);
+    if (error) {
+        throw new Error(JSON.stringify({ status: 400, message: error.message }));
+    }
+
+    await controller.pickUpBook(id_book, id_reader);
+    res.send('Book picked up');
 }));
 
 booksRouter.put('/return', asyncHandler(async (req, res) => {
