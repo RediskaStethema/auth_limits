@@ -41,15 +41,33 @@ export class LibraryServiceImplMongo implements LibraryService{
         return book as Book
     }
 
-    async returnBook(id: string, reader: string): Promise<void> {
-        const book = await BookModel.findOne({id});
-        if(!book)
-            throw new Error(JSON.stringify({status:404, message:`Book with id ${id} not found`}))
-        if(book.status !== BookStatus.ON_HAND)
-            throw new Error(JSON.stringify({status:403, message: `Book with id ${id} is on stock or removed. Check your book ID`}))
+    async returnBook(id_book: string, id_reader: string): Promise<void> {
+        const book = await BookModel.findOne({ id_book });
+        if (!book) {
+            throw new Error(JSON.stringify({ status: 404, message: `Book with id ${id_book} not found` }));
+        }
+        if (book.status !== BookStatus.ON_HAND) {
+            throw new Error(JSON.stringify({
+                status: 403,
+                message: `Book with id ${id_book} is on stock or removed. Check your book ID`
+            }));
+        }
         book.status = BookStatus.ON_STOCK;
-        book.pickList.push({reader: `Returned ${reader}`, date: new Date().toDateString()})
-        book.save();
+
+        // Удаление последней записи с этим reader
+        for (let i = book.pickList.length - 1; i >= 0; i--) {
+            if (book.pickList[i].reader === id_reader) {
+                book.pickList.splice(i, 1);
+                break;
+            }
+        }
+        // Добавляем запись о возврате
+        book.pickList.push({
+            reader: `Returned ${id_reader}`,
+            date: new Date().toISOString()
+        });
+
+        await book.save();
     }
 
     async getBooksByGenreAndStatus(gen: string, st: string): Promise<Book[]> {
