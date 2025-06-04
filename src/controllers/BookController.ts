@@ -30,8 +30,8 @@ export class BookController {
         return convertBookToBookDto(book);
     }
 
-    async pickUpBook(id: string) {
-        await libService.pickUpBook(id)
+   async pickUpBook(id_book: string, id_reader: string) {
+        await libService.pickUpBook(id_book, id_reader)
     }
 
     async returnBook(id: string, reader: string) {
